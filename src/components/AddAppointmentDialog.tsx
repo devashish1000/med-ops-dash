@@ -25,7 +25,7 @@ export function AddAppointmentDialog({ open, onOpenChange, onAdd }: AddAppointme
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState("30");
   const [type, setType] = useState<"New Patient" | "Follow-up" | "Procedure" | "Consultation">("Follow-up");
-  const [serviceLine, setServiceLine] = useState<"Neurology" | "Pain Management" | "PM&R">("Neurology");
+  const [serviceLine, setServiceLine] = useState<"Neurology" | "Pain Management" | "PM&R" | "Orthopedics" | "Cardiology" | "Primary Care" | "Physical Therapy" | "Sports Medicine">("Neurology");
   const [notes, setNotes] = useState("");
   const { toast } = useToast();
 
