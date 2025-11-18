@@ -48,7 +48,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <BackgroundParticles />
-        <div className="relative z-10">
+        <div className="relative z-10 overflow-x-hidden max-w-full">
           <AnimatedRoutes />
         </div>
       </BrowserRouter>
