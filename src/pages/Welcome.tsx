@@ -9,9 +9,9 @@ const Welcome = () => {
   const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "tasks" | "schedule">("analytics");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-x-hidden w-full">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-20 pb-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 max-w-full">
         <div className="text-center max-w-4xl mx-auto space-y-6">
           {/* Animated CHI Health Logo */}
           <div className="flex justify-center mb-6">
@@ -69,9 +69,9 @@ const Welcome = () => {
       </div>
 
       {/* Key Features */}
-      <div className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Everything You Need to Manage Your Practice</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-full">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">Everything You Need to Manage Your Practice</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="border-2 hover:border-primary transition-colors">
             <CardContent className="pt-6 space-y-4">
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -158,7 +158,7 @@ const Welcome = () => {
                 <p className="text-muted-foreground">
                   Monitor patient volume, revenue, provider utilization, and operational efficiency across all service lines.
                 </p>
-                <div className="grid grid-cols-3 gap-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="text-2xl font-bold text-success">↑ 23%</div>
                     <div className="text-sm text-muted-foreground">Patient Volume</div>
@@ -181,7 +181,7 @@ const Welcome = () => {
                 <p className="text-muted-foreground">
                   Analyze sentiment trends, respond to concerns, and track follow-ups across all service lines.
                 </p>
-                <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="text-2xl font-bold text-success">85%</div>
                     <div className="text-sm text-muted-foreground">Positive Sentiment</div>
@@ -200,7 +200,7 @@ const Welcome = () => {
                 <p className="text-muted-foreground">
                   Convert feedback into actionable tasks, track improvements, and measure impact on operations.
                 </p>
-                <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="text-2xl font-bold text-primary">100</div>
                     <div className="text-sm text-muted-foreground">Active Tasks</div>
@@ -219,7 +219,7 @@ const Welcome = () => {
                 <p className="text-muted-foreground">
                   Optimize provider schedules, track utilization, and reduce patient wait times with data-driven insights.
                 </p>
-                <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="text-2xl font-bold text-primary">150+</div>
                     <div className="text-sm text-muted-foreground">Weekly Appointments</div>
@@ -236,9 +236,9 @@ const Welcome = () => {
       </div>
 
       {/* Trust Indicators */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-full">
         <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-center">
             <div>
               <TrendingUp className="h-12 w-12 text-primary mx-auto mb-4" />
               <div className="text-2xl font-bold mb-2">50% Faster</div>
@@ -259,28 +259,43 @@ const Welcome = () => {
       </div>
 
       {/* Service Lines */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-full">
         <div className="max-w-2xl mx-auto text-center space-y-4">
-          <h3 className="text-2xl font-bold">Comprehensive Service Line Support</h3>
-          <div className="flex flex-wrap justify-center gap-4">
-            <div className="px-6 py-3 bg-primary/10 rounded-full text-primary font-medium">
+          <h3 className="text-xl sm:text-2xl font-bold">Comprehensive Service Line Support</h3>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
               Neurology
             </div>
-            <div className="px-6 py-3 bg-primary/10 rounded-full text-primary font-medium">
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
               Pain Management
             </div>
-            <div className="px-6 py-3 bg-primary/10 rounded-full text-primary font-medium">
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
               PM&R
+            </div>
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
+              Orthopedics
+            </div>
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
+              Cardiology
+            </div>
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
+              Primary Care
+            </div>
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
+              Physical Therapy
+            </div>
+            <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
+              Sports Medicine
             </div>
           </div>
         </div>
       </div>
 
       {/* Final CTA */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-full">
         <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-          <CardContent className="p-12 text-center space-y-6">
-            <h2 className="text-3xl font-bold">Start Managing Smarter Today</h2>
+          <CardContent className="p-6 sm:p-8 lg:p-12 text-center space-y-6">
+            <h2 className="text-2xl sm:text-3xl font-bold">Start Managing Smarter Today</h2>
             <p className="text-lg text-muted-foreground">
               Join healthcare leaders who are transforming their practice operations with data-driven insights
             </p>
