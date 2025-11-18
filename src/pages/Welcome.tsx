@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BarChart3, MessageSquare, CheckSquare, Calendar, TrendingUp, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import medOpsXLogo from "@/assets/medopsx-logo.png";
+
 
 const Welcome = () => {
   const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "tasks" | "schedule">("analytics");
@@ -13,25 +13,15 @@ const Welcome = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 max-w-full">
         <div className="text-center max-w-4xl mx-auto space-y-6">
-          {/* Animated Med OpsX Logo */}
-          <div className="flex justify-center mb-6">
-            <div className="relative animate-fade-in">
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse"></div>
-              <img 
-                src={medOpsXLogo} 
-                alt="Med OpsX" 
-                className="relative h-24 w-auto object-contain animate-scale-in"
-                style={{ animationDelay: '0.2s' }}
-              />
-            </div>
-          </div>
-          
           <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-4">
             Built for Medical Directors
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Data-Driven Healthcare Management
+          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
+            Med OpsX
           </h1>
+          <p className="text-2xl md:text-3xl font-semibold text-muted-foreground">
+            Data-Driven Healthcare Management
+          </p>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Transform your practice with real-time analytics, patient feedback, and intelligent task management—all in one unified platform.
           </p>
