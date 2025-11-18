@@ -2,14 +2,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BarChart3, MessageSquare, CheckSquare, Calendar, TrendingUp, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import chiHealthLogo from "@/assets/chi-health-logo.png";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 const Welcome = () => {
   const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "tasks" | "schedule">("analytics");
+  const [startTour, setStartTour] = useState(false);
+
+  useEffect(() => {
+    // Check if user has seen the tour
+    const tourCompleted = localStorage.getItem("onboarding-tour-completed");
+    if (!tourCompleted) {
+      setStartTour(true);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-x-hidden w-full">
+      <OnboardingTour run={startTour} />
       {/* Hero Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 max-w-full">
         <div className="text-center max-w-4xl mx-auto space-y-6">
@@ -55,7 +66,7 @@ const Welcome = () => {
           {/* CTA Buttons */}
           <div className="flex flex-wrap justify-center gap-4 pt-8">
             <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-8">
+              <Button size="lg" className="text-lg px-8" data-tour="nav-dashboard">
                 View Dashboard <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -71,7 +82,7 @@ const Welcome = () => {
       {/* Key Features */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-full">
         <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">Everything You Need to Manage Your Practice</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="quick-actions">
           <Card className="border-2 hover:border-primary transition-colors">
             <CardContent className="pt-6 space-y-4">
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -130,7 +141,7 @@ const Welcome = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
+        <div className="flex flex-wrap justify-center gap-4 mb-8" data-tour="nav-optimization">
           {[
             { id: "analytics", label: "Analytics", icon: TrendingUp },
             { id: "feedback", label: "Feedback", icon: MessageSquare },
@@ -262,7 +273,7 @@ const Welcome = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-full">
         <div className="max-w-2xl mx-auto text-center space-y-4">
           <h3 className="text-xl sm:text-2xl font-bold">Comprehensive Service Line Support</h3>
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4" data-tour="service-lines">
             <div className="px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full text-primary font-medium text-sm sm:text-base">
               Neurology
             </div>
