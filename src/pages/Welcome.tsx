@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BarChart3, MessageSquare, CheckSquare, Calendar, TrendingUp, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import chiHealthLogo from "@/assets/chi-health-logo.png";
 
 const Welcome = () => {
   const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "tasks" | "schedule">("analytics");
@@ -12,6 +13,19 @@ const Welcome = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-16">
         <div className="text-center max-w-4xl mx-auto space-y-6">
+          {/* Animated CHI Health Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="relative animate-fade-in">
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse"></div>
+              <img 
+                src={chiHealthLogo} 
+                alt="CHI Health" 
+                className="relative h-24 w-auto object-contain animate-scale-in"
+                style={{ animationDelay: '0.2s' }}
+              />
+            </div>
+          </div>
+          
           <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-4">
             Built for Medical Directors
           </div>
