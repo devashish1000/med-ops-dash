@@ -1,9 +1,23 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle, Calendar, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Recommendation {
   id: string;
@@ -21,6 +35,8 @@ interface Recommendation {
   resources: string[];
   expectedROI: string;
   timeframe: string;
+  implementationDate: string;
+  benefitRealizationDate: string;
 }
 
 const mockRecommendations: Recommendation[] = [
@@ -40,7 +56,9 @@ const mockRecommendations: Recommendation[] = [
     ],
     resources: ["Scheduling coordinator (2 hours)", "System configuration (1 hour)"],
     expectedROI: "+$15K monthly revenue, 12% reduction in wait times",
-    timeframe: "1-2 weeks"
+    timeframe: "1-2 weeks",
+    implementationDate: "Week of Dec 15, 2025",
+    benefitRealizationDate: "Jan 2026"
   },
   {
     id: "2",
@@ -58,7 +76,9 @@ const mockRecommendations: Recommendation[] = [
     ],
     resources: ["IT setup (3 hours)", "SMS service subscription ($200/month)"],
     expectedROI: "+$22K monthly revenue from recovered appointments",
-    timeframe: "1 week"
+    timeframe: "1 week",
+    implementationDate: "Week of Dec 8, 2025",
+    benefitRealizationDate: "Dec 2025"
   },
   {
     id: "3",
@@ -77,7 +97,9 @@ const mockRecommendations: Recommendation[] = [
     ],
     resources: ["Training program (1 week)", "Marketing materials", "IT support"],
     expectedROI: "+30% capacity utilization, $35K monthly revenue",
-    timeframe: "4-6 weeks"
+    timeframe: "4-6 weeks",
+    implementationDate: "Week of Jan 5, 2026",
+    benefitRealizationDate: "Mar 2026"
   },
   {
     id: "4",
@@ -95,7 +117,9 @@ const mockRecommendations: Recommendation[] = [
     ],
     resources: ["Schedule coordinator (5 hours)", "Provider agreement"],
     expectedROI: "+8% midday capacity, $8K monthly revenue",
-    timeframe: "2-3 weeks"
+    timeframe: "2-3 weeks",
+    implementationDate: "Week of Dec 22, 2025",
+    benefitRealizationDate: "Feb 2026"
   },
   {
     id: "5",
@@ -114,7 +138,9 @@ const mockRecommendations: Recommendation[] = [
     ],
     resources: ["Program development (8 weeks)", "Staff training", "Space allocation"],
     expectedROI: "+$45K monthly, 2.5x patient capacity per hour",
-    timeframe: "3-4 months"
+    timeframe: "3-4 months",
+    implementationDate: "Week of Feb 1, 2026",
+    benefitRealizationDate: "Jun 2026"
   },
   {
     id: "6",
@@ -133,12 +159,15 @@ const mockRecommendations: Recommendation[] = [
     ],
     resources: ["Data analysis (2 weeks)", "System integration", "Staff training"],
     expectedROI: "+$40K monthly revenue, 15% capacity gain",
-    timeframe: "8-12 weeks"
+    timeframe: "8-12 weeks",
+    implementationDate: "Week of Jan 12, 2026",
+    benefitRealizationDate: "Apr 2026"
   }
 ];
 
 export default function Optimization() {
   const navigate = useNavigate();
+  const [forecastPeriod, setForecastPeriod] = useState("90");
 
   const quickWins = mockRecommendations.filter(r => r.category === "quick-win");
   const longTerm = mockRecommendations.filter(r => r.category === "long-term");
@@ -175,6 +204,54 @@ export default function Optimization() {
               <p className="text-muted-foreground">Actionable recommendations to improve capacity and efficiency</p>
             </div>
           </div>
+        </div>
+
+        {/* Forecast Period & Data Analysis Banner */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Forecast Period</p>
+                    <p className="text-xs text-muted-foreground">Recommendations based on next:</p>
+                  </div>
+                </div>
+                <Select value={forecastPeriod} onValueChange={setForecastPeriod}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 Days</SelectItem>
+                    <SelectItem value="60">60 Days</SelectItem>
+                    <SelectItem value="90">90 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-muted-foreground/20 bg-muted/30">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">These insights are predictive recommendations for future planning based on historical trends and patterns</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <div>
+                  <p className="text-sm font-medium">Data Analysis Period</p>
+                  <p className="text-xs text-muted-foreground">Based on data from: Oct 1 - Nov 15, 2025</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Priority Matrix Overview */}
@@ -288,7 +365,7 @@ export default function Optimization() {
                   </div>
 
                   {/* Resources & ROI */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
                     <div>
                       <h4 className="font-semibold text-sm mb-1">Resources Needed</h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
@@ -304,6 +381,20 @@ export default function Optimization() {
                     <div>
                       <h4 className="font-semibold text-sm mb-1">Timeframe</h4>
                       <p className="text-sm text-muted-foreground">{rec.timeframe}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        Start Date
+                      </h4>
+                      <p className="text-sm text-primary font-medium">{rec.implementationDate}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        ROI Visible
+                      </h4>
+                      <p className="text-sm text-success font-medium">{rec.benefitRealizationDate}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -381,7 +472,7 @@ export default function Optimization() {
                   </div>
 
                   {/* Resources & ROI */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
                     <div>
                       <h4 className="font-semibold text-sm mb-1">Resources Needed</h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
@@ -397,6 +488,20 @@ export default function Optimization() {
                     <div>
                       <h4 className="font-semibold text-sm mb-1">Timeframe</h4>
                       <p className="text-sm text-muted-foreground">{rec.timeframe}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        Start Date
+                      </h4>
+                      <p className="text-sm text-primary font-medium">{rec.implementationDate}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        ROI Visible
+                      </h4>
+                      <p className="text-sm text-success font-medium">{rec.benefitRealizationDate}</p>
                     </div>
                   </div>
                 </CardContent>
