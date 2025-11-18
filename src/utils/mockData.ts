@@ -307,7 +307,7 @@ export function generateAppointments(): Appointment[] {
 // Generate historical analytics data
 export function generateHistoricalMetrics() {
   const months = [];
-  for (let i = 5; i >= 0; i--) {
+  for (let i = 11; i >= 0; i--) {
     months.push(format(subMonths(new Date(), i), 'MMM yyyy'));
   }
 
@@ -329,7 +329,9 @@ export function generateHistoricalMetrics() {
     })),
     satisfaction: months.map((month, i) => ({
       month,
-      value: 78 + i * 1.5 + Math.floor(Math.random() * 4),
+      satisfaction: 78 + i * 1.5 + Math.floor(Math.random() * 4),
+      target: 85,
+      previousYear: 72 + i * 1.2 + Math.floor(Math.random() * 3),
       trend: i > 0 ? (i * 1 + Math.floor(Math.random() * 2)) : 0
     })),
   };

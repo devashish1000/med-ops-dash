@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,10 @@ import { RespondDialog } from '@/components/RespondDialog';
 import { TaskDetailsDialog } from '@/components/TaskDetailsDialog';
 import { AddAppointmentDialog } from '@/components/AddAppointmentDialog';
 import { ProviderDetailsDialog } from '@/components/ProviderDetailsDialog';
+import { ActivityDetailsDialog } from '@/components/ActivityDetailsDialog';
+import { UserProfile } from '@/components/UserProfile';
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import {
   Pagination,
   PaginationContent,
@@ -25,6 +29,23 @@ import {
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check authentication
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const email = localStorage.getItem("userEmail");
+    
+    if (isLoggedIn === "true" && email) {
+      setIsAuthenticated(true);
+      setUserEmail(email);
+    } else {
+      navigate("/auth");
+    }
+  }, [navigate]);
 
   // Generate initial data
   const initialFeedback = useMemo(() => generateFeedback(), []);
@@ -52,6 +73,8 @@ const Dashboard = () => {
   const [addAppointmentDialogOpen, setAddAppointmentDialogOpen] = useState(false);
   const [providerDialogOpen, setProviderDialogOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<FeedbackRecord | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -217,6 +240,22 @@ const Dashboard = () => {
     setKanbanStatusFilter(kanbanStatusFilter === status ? null : status);
   };
 
+  const handleSignOut = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userEmail");
+    sonnerToast.success("Signed out successfully");
+    navigate("/auth");
+  };
+
+  const handleActivityCardClick = (feedback: FeedbackRecord) => {
+    setSelectedActivity(feedback);
+    setActivityDialogOpen(true);
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   // Filtered kanban tasks by status
   const displayedTasks = useMemo(() => {
     if (!kanbanStatusFilter) return filteredTasks;
@@ -263,8 +302,14 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={metrics}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="hsl(var(--muted-foreground))"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis stroke="hsl(var(--muted-foreground))" domain={[60, 100]} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--popover))',
@@ -272,7 +317,33 @@ const Dashboard = () => {
                     borderRadius: '6px'
                   }}
                 />
-                <Line type="monotone" dataKey="satisfaction" stroke="hsl(var(--primary))" strokeWidth={3} />
+                <Line 
+                  type="monotone" 
+                  dataKey="satisfaction" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={3}
+                  dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Current"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="target" 
+                  stroke="hsl(var(--success))" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name="Target"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="previousYear" 
+                  stroke="hsl(var(--muted-foreground))" 
+                  strokeWidth={2}
+                  strokeDasharray="3 3"
+                  dot={false}
+                  name="Previous Year"
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -309,7 +380,11 @@ const Dashboard = () => {
         <CardContent>
           <div className="space-y-3">
             {filteredFeedback.slice(0, 5).map((feedback, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div 
+                key={i} 
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted hover:scale-[1.02] transition-all duration-200"
+                onClick={() => handleActivityCardClick(feedback)}
+              >
                 <div className="flex items-center gap-3">
                   <MessageSquare className="h-4 w-4 text-primary" />
                   <div>
@@ -678,13 +753,11 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground">Real-time insights and analytics</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => window.location.href = "/"}>
+          <div className="flex gap-2 items-center">
+            <Button variant="outline" onClick={() => navigate("/")}>
               Welcome
             </Button>
-            <Button variant="outline" onClick={() => window.location.href = "/auth"}>
-              Login
-            </Button>
+            <UserProfile email={userEmail} onSignOut={handleSignOut} />
           </div>
         </div>
 
@@ -780,6 +853,12 @@ const Dashboard = () => {
         appointments={filteredAppointments}
         open={providerDialogOpen}
         onOpenChange={setProviderDialogOpen}
+      />
+
+      <ActivityDetailsDialog
+        feedback={selectedActivity}
+        open={activityDialogOpen}
+        onOpenChange={setActivityDialogOpen}
       />
     </div>
   );
