@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle, Calendar, Info, Download } from "lucide-react";
+import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle, Calendar, Info, Download, Users, BarChart3, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, Cell } from 'recharts';
 import jsPDF from 'jspdf';
 import { useToast } from "@/hooks/use-toast";
 
@@ -202,6 +203,69 @@ export default function Optimization() {
     };
   }, [forecastPeriod]);
 
+  // Calculate dynamic KPIs based on filtered recommendations
+  const dynamicKPIs = useMemo(() => {
+    const totalRevenue = filteredRecommendations.reduce((sum, rec) => {
+      const revenueMatch = rec.expectedROI.match(/\+?\$(\d+)K/);
+      return sum + (revenueMatch ? parseInt(revenueMatch[1]) : 0);
+    }, 0);
+
+    const avgPatientSat = filteredRecommendations.length > 0
+      ? Math.round(filteredRecommendations.reduce((sum, rec) => sum + rec.impact.patientSat, 0) / filteredRecommendations.length / 5)
+      : 0;
+
+    const avgCapacity = filteredRecommendations.length > 0
+      ? Math.round(filteredRecommendations.reduce((sum, rec) => sum + rec.impact.providerSat, 0) / filteredRecommendations.length / 3)
+      : 0;
+
+    return {
+      revenue: totalRevenue,
+      patientSat: avgPatientSat,
+      capacity: avgCapacity
+    };
+  }, [filteredRecommendations]);
+
+  // Service line comparison data
+  const serviceLineData = useMemo(() => {
+    const serviceLines = ["Neurology", "Pain Management", "PM&R", "Orthopedics", "Cardiology", "Primary Care", "Physical Therapy", "Sports Medicine"];
+    return serviceLines.map(line => ({
+      name: line,
+      patientVolume: Math.floor(Math.random() * 500) + 200,
+      revenue: Math.floor(Math.random() * 150) + 50,
+      satisfaction: (Math.random() * 1 + 4).toFixed(1)
+    }));
+  }, []);
+
+  // Referral tracking data
+  const referralData = useMemo(() => [
+    { from: "Primary Care", to: "Cardiology", count: 45 },
+    { from: "Primary Care", to: "Orthopedics", count: 38 },
+    { from: "Sports Medicine", to: "Orthopedics", count: 32 },
+    { from: "Sports Medicine", to: "Physical Therapy", count: 28 },
+    { from: "Pain Management", to: "PM&R", count: 25 },
+    { from: "Neurology", to: "Pain Management", count: 22 },
+    { from: "Cardiology", to: "Physical Therapy", count: 18 },
+    { from: "Orthopedics", to: "Physical Therapy", count: 35 }
+  ], []);
+
+  // Provider capacity utilization data
+  const providerCapacityData = useMemo(() => {
+    const providers = [
+      "Dr. Sarah Chen", "Dr. Michael Rodriguez", "Dr. Emily Johnson", 
+      "Dr. James Williams", "Dr. Lisa Anderson", "Dr. Robert Martinez",
+      "Dr. Amanda Foster", "Dr. David Thompson", "Dr. Jennifer Lee", "Dr. Christopher Brown"
+    ];
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+    
+    return providers.map(provider => ({
+      name: provider,
+      ...days.reduce((acc, day) => ({
+        ...acc,
+        [day]: Math.floor(Math.random() * 40) + 60 // 60-100% utilization
+      }), {})
+    }));
+  }, []);
+
   const getEffortColor = (effort: string) => {
     switch (effort) {
       case "low": return "bg-green-500";
@@ -235,6 +299,14 @@ export default function Optimization() {
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Forecast Period: ${forecastPeriod} Days`, margin, yPosition);
     pdf.text(`Data Analysis: Oct 1 - Nov 15, 2025`, margin, yPosition + 5);
+    
+    yPosition += 10;
+    
+    // KPIs
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Revenue Impact: +$${dynamicKPIs.revenue}K/mo`, margin, yPosition);
+    pdf.text(`Patient Satisfaction: +${dynamicKPIs.patientSat}%`, margin + 65, yPosition);
+    pdf.text(`Capacity: +${dynamicKPIs.capacity}%`, margin + 130, yPosition);
     
     yPosition += 15;
 
@@ -425,7 +497,7 @@ export default function Optimization() {
                     <TrendingUp className="h-5 w-5 text-green-500" />
                     <h3 className="font-semibold">Revenue Impact</h3>
                   </div>
-                  <p className="text-2xl font-bold">+$165K/mo</p>
+                  <p className="text-2xl font-bold">+${dynamicKPIs.revenue}K/mo</p>
                   <p className="text-sm text-muted-foreground">Potential monthly increase</p>
                 </CardContent>
               </Card>
@@ -435,7 +507,7 @@ export default function Optimization() {
                     <Heart className="h-5 w-5 text-blue-500" />
                     <h3 className="font-semibold">Patient Satisfaction</h3>
                   </div>
-                  <p className="text-2xl font-bold">+18%</p>
+                  <p className="text-2xl font-bold">+{dynamicKPIs.patientSat}%</p>
                   <p className="text-sm text-muted-foreground">Average improvement</p>
                 </CardContent>
               </Card>
@@ -445,7 +517,7 @@ export default function Optimization() {
                     <Clock className="h-5 w-5 text-purple-500" />
                     <h3 className="font-semibold">Capacity Utilization</h3>
                   </div>
-                  <p className="text-2xl font-bold">+25%</p>
+                  <p className="text-2xl font-bold">+{dynamicKPIs.capacity}%</p>
                   <p className="text-sm text-muted-foreground">Expected increase</p>
                 </CardContent>
               </Card>
@@ -682,6 +754,168 @@ export default function Optimization() {
             </CardContent>
           </Card>
         )}
+
+        {/* Service Line Comparison */}
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <CardTitle>Service Line Performance Comparison</CardTitle>
+            </div>
+            <CardDescription>Patient volume, revenue, and satisfaction across all service lines</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div>
+                <h4 className="font-semibold mb-3 text-center">Patient Volume</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={serviceLineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                    <Bar dataKey="patientVolume" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3 text-center">Revenue ($K/month)</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={serviceLineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                    <Bar dataKey="revenue" fill="#10b981" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3 text-center">Satisfaction Score</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={serviceLineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} stroke="hsl(var(--muted-foreground))" style={{ fontSize: '10px' }} />
+                    <YAxis domain={[0, 5]} stroke="hsl(var(--muted-foreground))" />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                    <Bar dataKey="satisfaction" fill="#f59e0b" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cross-Service Referral Tracking */}
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              <CardTitle>Cross-Service Line Referral Tracking</CardTitle>
+            </div>
+            <CardDescription>Patient movement between specialties</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {referralData.map((referral, idx) => (
+                <div key={idx} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex-1 flex items-center gap-3">
+                    <Badge variant="outline" className="min-w-[140px] justify-center">{referral.from}</Badge>
+                    <span className="text-muted-foreground">→</span>
+                    <Badge variant="outline" className="min-w-[140px] justify-center">{referral.to}</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-semibold text-lg">{referral.count}</span>
+                    <span className="text-sm text-muted-foreground">referrals</span>
+                  </div>
+                  <Progress value={(referral.count / 50) * 100} className="w-24" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Provider Capacity Utilization Heat Map */}
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <CardTitle>Provider Capacity Utilization</CardTitle>
+            </div>
+            <CardDescription>Weekly capacity utilization heat map by provider</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border p-2 text-left font-semibold bg-muted">Provider</th>
+                    <th className="border p-2 text-center font-semibold bg-muted">Mon</th>
+                    <th className="border p-2 text-center font-semibold bg-muted">Tue</th>
+                    <th className="border p-2 text-center font-semibold bg-muted">Wed</th>
+                    <th className="border p-2 text-center font-semibold bg-muted">Thu</th>
+                    <th className="border p-2 text-center font-semibold bg-muted">Fri</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {providerCapacityData.map((provider, idx) => (
+                    <tr key={idx}>
+                      <td className="border p-2 font-medium">{provider.name}</td>
+                      {["Mon", "Tue", "Wed", "Thu", "Fri"].map(day => {
+                        const utilization = provider[day];
+                        const bgColor = utilization >= 90 ? 'bg-red-500/20' : 
+                                       utilization >= 80 ? 'bg-orange-500/20' : 
+                                       utilization >= 70 ? 'bg-yellow-500/20' : 'bg-green-500/20';
+                        return (
+                          <td key={day} className={`border p-2 text-center ${bgColor}`}>
+                            <span className="font-semibold">{utilization}%</span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-500/20 border"></div>
+                  <span className="text-muted-foreground">60-70% (Optimal)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-yellow-500/20 border"></div>
+                  <span className="text-muted-foreground">70-80% (Good)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-orange-500/20 border"></div>
+                  <span className="text-muted-foreground">80-90% (Busy)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-500/20 border"></div>
+                  <span className="text-muted-foreground">90-100% (Overbooked)</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
