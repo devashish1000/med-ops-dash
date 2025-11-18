@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BarChart3, MessageSquare, CheckSquare, Calendar, TrendingUp, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import chiHealthLogo from "@/assets/chi-health-logo.png";
+import medOpsXLogo from "@/assets/medopsx-logo.png";
 
 const Welcome = () => {
   const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "tasks" | "schedule">("analytics");
@@ -13,13 +13,13 @@ const Welcome = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 max-w-full">
         <div className="text-center max-w-4xl mx-auto space-y-6">
-          {/* Animated CHI Health Logo */}
+          {/* Animated Med OpsX Logo */}
           <div className="flex justify-center mb-6">
             <div className="relative animate-fade-in">
               <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse"></div>
               <img 
-                src={chiHealthLogo} 
-                alt="CHI Health" 
+                src={medOpsXLogo} 
+                alt="Med OpsX" 
                 className="relative h-24 w-auto object-contain animate-scale-in"
                 style={{ animationDelay: '0.2s' }}
               />
