@@ -79,7 +79,7 @@ export function UserProfile({ email, onSignOut, onRestartTour }: UserProfileProp
           {onRestartTour && (
             <DropdownMenuItem onClick={onRestartTour} className="cursor-pointer">
               <Play className="mr-2 h-4 w-4" />
-              <span>Restart Tour</span>
+              <span>Start Tour</span>
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
