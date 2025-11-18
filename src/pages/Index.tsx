@@ -16,6 +16,7 @@ import { AddAppointmentDialog } from '@/components/AddAppointmentDialog';
 import { ProviderDetailsDialog } from '@/components/ProviderDetailsDialog';
 import { ActivityDetailsDialog } from '@/components/ActivityDetailsDialog';
 import { UserProfile } from '@/components/UserProfile';
+import { OnboardingTour } from '@/components/OnboardingTour';
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import {
@@ -35,15 +36,23 @@ const Dashboard = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [startTour, setStartTour] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     const email = localStorage.getItem("userEmail");
+    const firstTimeUser = localStorage.getItem("firstTimeUser");
     
     if (isLoggedIn === "true" && email) {
       setIsAuthenticated(true);
       setUserEmail(email);
       setIsCheckingAuth(false);
+      
+      // Start tour for first-time users only
+      if (firstTimeUser === "true") {
+        setTimeout(() => setStartTour(true), 1000);
+        localStorage.removeItem("firstTimeUser"); // Clear flag after showing
+      }
     } else {
       navigate("/auth");
     }
@@ -293,7 +302,7 @@ const Dashboard = () => {
 
   const renderDashboardView = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="kpi-cards">
         {renderStatCard(<Users className="h-8 w-8 text-primary" />, dashboardStats.patients)}
         {renderStatCard(<DollarSign className="h-8 w-8 text-success" />, dashboardStats.revenue)}
         {renderStatCard(<Clock className="h-8 w-8 text-warning" />, dashboardStats.utilization)}
@@ -428,7 +437,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Select value={selectedServiceLine} onValueChange={setSelectedServiceLine}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[200px]" data-tour="service-line-filter">
               <SelectValue placeholder="All Service Lines" />
             </SelectTrigger>
             <SelectContent>
@@ -497,7 +506,7 @@ const Dashboard = () => {
         <CardHeader>
           <CardTitle>Recent Feedback</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent data-tour="feedback-section">
           <div className="space-y-3">
             {paginatedFeedback.map((feedback) => (
               <div key={feedback.id} className="p-4 rounded-lg bg-muted/50 space-y-3">
@@ -818,6 +827,7 @@ const Dashboard = () => {
 
   return (
     <>
+      <OnboardingTour run={startTour} />
       {isCheckingAuth ? (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center space-y-4">
@@ -844,7 +854,7 @@ const Dashboard = () => {
 
         {/* Navigation & Date Filter */}
         <div className="flex flex-wrap items-center gap-4 justify-between">
-          <div className="flex gap-2">
+          <div className="flex gap-2" data-tour="nav-tabs">
             {[
               { id: "dashboard", label: "Dashboard", icon: TrendingUp },
               { id: "feedback", label: "Feedback", icon: MessageSquare },
@@ -895,6 +905,7 @@ const Dashboard = () => {
             <Button
               variant="outline"
               onClick={() => window.location.href = "/optimization"}
+              data-tour="optimization-link"
             >
               <TrendingUp className="mr-2 h-4 w-4" />
               Optimization
