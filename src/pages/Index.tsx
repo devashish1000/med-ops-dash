@@ -81,6 +81,13 @@ const Dashboard = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  // Kanban column pagination state
+  const [kanbanPageToDo, setKanbanPageToDo] = useState(1);
+  const [kanbanPageInProgress, setKanbanPageInProgress] = useState(1);
+  const [kanbanPageReview, setKanbanPageReview] = useState(1);
+  const [kanbanPageDone, setKanbanPageDone] = useState(1);
+  const kanbanItemsPerPage = 10;
 
   // Kanban filter state
   const [kanbanStatusFilter, setKanbanStatusFilter] = useState<string | null>(null);
@@ -609,6 +616,30 @@ const Dashboard = () => {
             const tasks = displayedTasks.filter(t => t.status === col.status);
             const isVisible = !kanbanStatusFilter || kanbanStatusFilter === col.status;
             
+            // Get pagination state for this column
+            let currentKanbanPage = 1;
+            let setCurrentKanbanPage = setKanbanPageToDo;
+            
+            if (col.status === "ToDo") {
+              currentKanbanPage = kanbanPageToDo;
+              setCurrentKanbanPage = setKanbanPageToDo;
+            } else if (col.status === "InProgress") {
+              currentKanbanPage = kanbanPageInProgress;
+              setCurrentKanbanPage = setKanbanPageInProgress;
+            } else if (col.status === "Review") {
+              currentKanbanPage = kanbanPageReview;
+              setCurrentKanbanPage = setKanbanPageReview;
+            } else if (col.status === "Done") {
+              currentKanbanPage = kanbanPageDone;
+              setCurrentKanbanPage = setKanbanPageDone;
+            }
+            
+            // Paginate tasks for this column
+            const totalKanbanPages = Math.ceil(tasks.length / kanbanItemsPerPage);
+            const startIdx = (currentKanbanPage - 1) * kanbanItemsPerPage;
+            const endIdx = startIdx + kanbanItemsPerPage;
+            const paginatedTasks = tasks.slice(startIdx, endIdx);
+            
             return (
               <div 
                 key={col.status} 
@@ -619,7 +650,7 @@ const Dashboard = () => {
                     <CardTitle className="text-sm">{col.title} ({tasks.length})</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {tasks.map(task => (
+                    {paginatedTasks.map(task => (
                       <div
                         key={task.id}
                         className="p-3 rounded-lg border-2 border-primary/20 bg-muted/50 cursor-pointer hover:bg-muted hover:border-primary/40 transition-all"
@@ -636,6 +667,35 @@ const Dashboard = () => {
                         </div>
                       </div>
                     ))}
+                    
+                    {/* Pagination controls */}
+                    {totalKanbanPages > 1 && (
+                      <div className="pt-3 mt-3 border-t border-border">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentKanbanPage(Math.max(1, currentKanbanPage - 1))}
+                            disabled={currentKanbanPage === 1}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="text-xs text-muted-foreground">
+                            List: {currentKanbanPage}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentKanbanPage(Math.min(totalKanbanPages, currentKanbanPage + 1))}
+                            disabled={currentKanbanPage === totalKanbanPages}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -761,9 +821,7 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Real-time insights and analytics</p>
           </div>
           <div className="flex gap-2 items-center">
-            <Button variant="outline" onClick={() => navigate("/")}>
-              Welcome
-            </Button>
+            <p className="text-sm text-muted-foreground">Welcome {userEmail}!</p>
             <UserProfile email={userEmail} onSignOut={handleSignOut} />
           </div>
         </div>
