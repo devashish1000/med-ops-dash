@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart } from 'recharts';
 import { TrendingUp, Users, DollarSign, Clock, Star, MessageSquare, CheckSquare, Calendar, Download, Flag, Reply, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { generateFeedback, generateKanbanTasks, generateAppointments, generateHistoricalMetrics, providers, FeedbackRecord, KanbanTask, Appointment } from '@/utils/mockData';
@@ -775,12 +776,15 @@ const Dashboard = () => {
               <CardContent className="pt-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: provider.color }}
-                    >
-                      {provider.name.split(' ').map(n => n[0]).join('')}
-                    </div>
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={provider.image} alt={provider.name} />
+                      <AvatarFallback 
+                        className="text-white font-bold"
+                        style={{ backgroundColor: provider.color }}
+                      >
+                        {provider.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <p className="font-semibold">{provider.name}</p>
                       <p className="text-sm text-muted-foreground">{provider.specialty}</p>
