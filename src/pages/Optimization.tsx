@@ -188,16 +188,19 @@ export default function Optimization() {
   };
 
   // Filter recommendations based on forecast period
-  const filteredRecommendations = useMemo(() => {
+  const { filteredRecommendations, quickWins, longTerm } = useMemo(() => {
     const forecastDays = parseInt(forecastPeriod);
-    return mockRecommendations.filter(rec => {
+    const filtered = mockRecommendations.filter(rec => {
       const implementationDays = parseTimeframeToDays(rec.timeframe);
       return implementationDays <= forecastDays;
     });
+    
+    return {
+      filteredRecommendations: filtered,
+      quickWins: filtered.filter(r => r.category === "quick-win"),
+      longTerm: filtered.filter(r => r.category === "long-term")
+    };
   }, [forecastPeriod]);
-
-  const quickWins = filteredRecommendations.filter(r => r.category === "quick-win");
-  const longTerm = filteredRecommendations.filter(r => r.category === "long-term");
 
   const getEffortColor = (effort: string) => {
     switch (effort) {
