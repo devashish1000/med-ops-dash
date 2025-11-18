@@ -1,15 +1,24 @@
 import { useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Upload, LogOut, Play } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserProfileProps {
   email: string;
   onSignOut: () => void;
+  onRestartTour?: () => void;
 }
 
-export function UserProfile({ email, onSignOut }: UserProfileProps) {
+export function UserProfile({ email, onSignOut, onRestartTour }: UserProfileProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string>(() => {
     return localStorage.getItem(`avatar_${email}`) || "";
@@ -49,17 +58,37 @@ export function UserProfile({ email, onSignOut }: UserProfileProps) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-sm font-medium hidden sm:block">{userName}</span>
-      <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
-        <Avatar className="h-10 w-10 ring-2 ring-primary/20 hover:ring-primary transition-all">
-          <AvatarImage src={avatarUrl} alt={userName} />
-          <AvatarFallback className="bg-gradient-to-br from-primary to-cyan-400 text-white">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-          <Upload className="h-4 w-4 text-white" />
-        </div>
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="relative group cursor-pointer">
+            <Avatar className="h-10 w-10 ring-2 ring-primary/20 hover:ring-primary transition-all">
+              <AvatarImage src={avatarUrl} alt={userName} />
+              <AvatarFallback className="bg-gradient-to-br from-primary to-cyan-400 text-white">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleAvatarClick} className="cursor-pointer">
+            <Upload className="mr-2 h-4 w-4" />
+            <span>Change Avatar</span>
+          </DropdownMenuItem>
+          {onRestartTour && (
+            <DropdownMenuItem onClick={onRestartTour} className="cursor-pointer">
+              <Play className="mr-2 h-4 w-4" />
+              <span>Restart Tour</span>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-destructive focus:text-destructive">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Sign Out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <input
         ref={fileInputRef}
         type="file"
@@ -67,9 +96,6 @@ export function UserProfile({ email, onSignOut }: UserProfileProps) {
         className="hidden"
         onChange={handleFileChange}
       />
-      <Button variant="outline" onClick={onSignOut}>
-        Sign Out
-      </Button>
     </div>
   );
 }

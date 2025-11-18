@@ -267,6 +267,11 @@ const Dashboard = () => {
     navigate("/auth");
   };
 
+  const handleRestartTour = () => {
+    setStartTour(true);
+    sonnerToast.success("Tour restarted! Follow the highlights.");
+  };
+
   const handleActivityCardClick = (feedback: FeedbackRecord) => {
     setSelectedActivity(feedback);
     setActivityDialogOpen(true);
@@ -848,7 +853,7 @@ const Dashboard = () => {
           </div>
           <div className="flex gap-2 items-center">
             <p className="text-sm text-muted-foreground">Welcome {userEmail}!</p>
-            <UserProfile email={userEmail} onSignOut={handleSignOut} />
+            <UserProfile email={userEmail} onSignOut={handleSignOut} onRestartTour={handleRestartTour} />
           </div>
         </div>
 
