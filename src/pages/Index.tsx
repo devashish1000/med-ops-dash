@@ -34,6 +34,7 @@ const Dashboard = () => {
   // Check authentication
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -42,6 +43,7 @@ const Dashboard = () => {
     if (isLoggedIn === "true" && email) {
       setIsAuthenticated(true);
       setUserEmail(email);
+      setIsCheckingAuth(false);
     } else {
       navigate("/auth");
     }
@@ -620,7 +622,7 @@ const Dashboard = () => {
                     {tasks.map(task => (
                       <div
                         key={task.id}
-                        className="p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                        className="p-3 rounded-lg border-2 border-primary/20 bg-muted/50 cursor-pointer hover:bg-muted hover:border-primary/40 transition-all"
                         onClick={() => handleTaskCardClick(task)}
                       >
                         <p className="text-sm font-medium mb-2">{task.title}</p>
@@ -739,8 +741,17 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <>
+      {isCheckingAuth ? (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center space-y-4">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="min-h-screen bg-background p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -823,6 +834,8 @@ const Dashboard = () => {
         {activeView === "kanban" && renderKanbanView()}
         {activeView === "schedule" && renderScheduleView()}
       </div>
+    </div>
+      )}
 
       {/* Dialogs */}
       <RespondDialog
@@ -856,7 +869,7 @@ const Dashboard = () => {
         open={activityDialogOpen}
         onOpenChange={setActivityDialogOpen}
       />
-    </div>
+    </>
   );
 };
 
