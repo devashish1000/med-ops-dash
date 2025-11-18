@@ -40,8 +40,20 @@ const ClinicOpsSuite = () => {
     date: '',
     rating: 5,
     comments: '',
-    serviceLine: 'Neurology'
+    serviceLine: 'Neurology',
+    patientName: '',
+    patientContact: '',
+    isAnonymous: false
   });
+
+  const [showResponseModal, setShowResponseModal] = useState(false);
+  const [selectedFeedbackForResponse, setSelectedFeedbackForResponse] = useState<any>(null);
+  const [responseText, setResponseText] = useState('');
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [selectedFeedbackForFollowUp, setSelectedFeedbackForFollowUp] = useState<any>(null);
+  const [followUpNotes, setFollowUpNotes] = useState('');
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [feedbackLink, setFeedbackLink] = useState('');
 
   const [newTask, setNewTask] = useState({
     title: '',
@@ -213,18 +225,121 @@ const ClinicOpsSuite = () => {
       rating: newFeedback.rating,
       sentiment,
       comments: newFeedback.comments,
-      serviceLine: newFeedback.serviceLine
+      serviceLine: newFeedback.serviceLine,
+      patientName: newFeedback.isAnonymous ? 'Anonymous' : newFeedback.patientName,
+      patientContact: newFeedback.isAnonymous ? '' : newFeedback.patientContact,
+      isAnonymous: newFeedback.isAnonymous,
+      status: 'pending', // pending, responded, resolved
+      response: '',
+      followUpNotes: '',
+      needsFollowUp: sentiment === 'negative',
+      followUpCompleted: false
     };
 
     setFeedbackData([...feedbackData, feedback].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    setNewFeedback({ date: '', rating: 5, comments: '', serviceLine: 'Neurology' });
+    setNewFeedback({ date: '', rating: 5, comments: '', serviceLine: 'Neurology', patientName: '', patientContact: '', isAnonymous: false });
     setShowAddFeedbackForm(false);
+    alert('Feedback added successfully!');
   };
 
   const handleDeleteFeedback = (id) => {
     if (window.confirm('Delete this feedback?')) {
       setFeedbackData(feedbackData.filter(f => f.id !== id));
+      alert('Feedback deleted successfully!');
     }
+  };
+
+  const handleRespondToFeedback = () => {
+    if (!responseText.trim()) {
+      alert('Please enter a response');
+      return;
+    }
+
+    setFeedbackData(feedbackData.map(f => 
+      f.id === selectedFeedbackForResponse.id 
+        ? { ...f, response: responseText, status: 'responded' }
+        : f
+    ));
+
+    setShowResponseModal(false);
+    setResponseText('');
+    setSelectedFeedbackForResponse(null);
+    alert('Response saved successfully!');
+  };
+
+  const handleMarkAsResolved = (id) => {
+    setFeedbackData(feedbackData.map(f => 
+      f.id === id ? { ...f, status: 'resolved' } : f
+    ));
+    alert('Feedback marked as resolved!');
+  };
+
+  const handleCreateTaskFromFeedback = (feedback) => {
+    const task = {
+      id: Date.now(),
+      title: `Address feedback: ${feedback.comments.substring(0, 50)}...`,
+      status: 'ToDo',
+      owner: currentUser,
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+      tags: ['feedback', feedback.serviceLine, feedback.sentiment],
+      linkedFeedbackId: feedback.id
+    };
+
+    setTasks([...tasks, task]);
+    alert('Task created successfully! Check the Kanban board.');
+  };
+
+  const handleSaveFollowUp = () => {
+    if (!followUpNotes.trim()) {
+      alert('Please enter follow-up notes');
+      return;
+    }
+
+    setFeedbackData(feedbackData.map(f => 
+      f.id === selectedFeedbackForFollowUp.id 
+        ? { ...f, followUpNotes, followUpCompleted: true }
+        : f
+    ));
+
+    setShowFollowUpModal(false);
+    setFollowUpNotes('');
+    setSelectedFeedbackForFollowUp(null);
+    alert('Follow-up saved successfully!');
+  };
+
+  const handleGenerateFeedbackLink = () => {
+    const baseUrl = window.location.origin;
+    const link = `${baseUrl}/?feedback=true&user=${currentUser}`;
+    setFeedbackLink(link);
+    setShowQRModal(true);
+  };
+
+  const handleExportFilteredFeedback = (filterType) => {
+    let dataToExport = feedbackData;
+    let filename = 'feedback_data';
+
+    if (filterType === 'negative') {
+      dataToExport = feedbackData.filter(f => f.sentiment === 'negative');
+      filename = 'negative_feedback';
+    } else if (filterType === 'pending') {
+      dataToExport = feedbackData.filter(f => f.status === 'pending');
+      filename = 'pending_feedback';
+    } else if (filterType === 'needsFollowUp') {
+      dataToExport = feedbackData.filter(f => f.needsFollowUp && !f.followUpCompleted);
+      filename = 'followup_required';
+    }
+
+    const dataStr = JSON.stringify(dataToExport, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}_${currentUser}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    alert(`Exported ${dataToExport.length} feedback records!`);
   };
 
   const handleAddTask = () => {
@@ -273,6 +388,61 @@ const ClinicOpsSuite = () => {
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [filteredFeedback]);
+
+  const sentimentTrendData = useMemo(() => {
+    // Group feedback by date and calculate sentiment percentages
+    const dateMap = new Map();
+    
+    feedbackData.forEach(f => {
+      if (!dateMap.has(f.date)) {
+        dateMap.set(f.date, { date: f.date, positive: 0, neutral: 0, negative: 0, total: 0 });
+      }
+      const entry = dateMap.get(f.date);
+      entry[f.sentiment]++;
+      entry.total++;
+    });
+
+    return Array.from(dateMap.values())
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-30) // Last 30 days
+      .map(entry => ({
+        date: entry.date,
+        positive: Math.round((entry.positive / entry.total) * 100),
+        neutral: Math.round((entry.neutral / entry.total) * 100),
+        negative: Math.round((entry.negative / entry.total) * 100)
+      }));
+  }, [feedbackData]);
+
+  const serviceLineSatisfaction = useMemo(() => {
+    const serviceLines = ['Neurology', 'Pain Management', 'PM&R'];
+    return serviceLines.map(line => {
+      const lineFeedback = feedbackData.filter(f => f.serviceLine === line);
+      const avgRating = lineFeedback.length > 0
+        ? lineFeedback.reduce((sum, f) => sum + f.rating, 0) / lineFeedback.length
+        : 0;
+      const satisfactionRate = lineFeedback.length > 0
+        ? (lineFeedback.filter(f => f.sentiment === 'positive').length / lineFeedback.length) * 100
+        : 0;
+      return {
+        name: line,
+        avgRating: parseFloat(avgRating.toFixed(1)),
+        satisfaction: Math.round(satisfactionRate),
+        count: lineFeedback.length
+      };
+    });
+  }, [feedbackData]);
+
+  const feedbackStats = useMemo(() => {
+    const pending = feedbackData.filter(f => f.status === 'pending').length;
+    const needsFollowUp = feedbackData.filter(f => f.needsFollowUp && !f.followUpCompleted).length;
+    const thisWeek = feedbackData.filter(f => {
+      const feedbackDate = new Date(f.date);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      return feedbackDate >= weekAgo;
+    }).length;
+    
+    return { pending, needsFollowUp, thisWeek };
+  }, [feedbackData]);
 
   const handleExportData = (dataType) => {
     let dataToExport = [];
@@ -789,21 +959,76 @@ const ClinicOpsSuite = () => {
 
   const FeedbackView = () => (
     <div className="space-y-6">
+      {/* Feedback Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageSquare className="text-blue-600" size={20} />
+            <p className="text-sm text-gray-500">This Week</p>
+          </div>
+          <p className="text-2xl font-bold text-blue-600">{feedbackStats.thisWeek}</p>
+          <p className="text-xs text-gray-500 mt-1">New responses</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="text-orange-600" size={20} />
+            <p className="text-sm text-gray-500">Pending</p>
+          </div>
+          <p className="text-2xl font-bold text-orange-600">{feedbackStats.pending}</p>
+          <p className="text-xs text-gray-500 mt-1">Awaiting response</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle className="text-red-600" size={20} />
+            <p className="text-sm text-gray-500">Follow-Up</p>
+          </div>
+          <p className="text-2xl font-bold text-red-600">{feedbackStats.needsFollowUp}</p>
+          <p className="text-xs text-gray-500 mt-1">Requires action</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle className="text-green-600" size={20} />
+            <p className="text-sm text-gray-500">Total</p>
+          </div>
+          <p className="text-2xl font-bold text-green-600">{feedbackData.length}</p>
+          <p className="text-xs text-gray-500 mt-1">All feedback</p>
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-3 justify-between bg-white p-4 rounded-lg shadow">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setShowAddFeedbackForm(!showAddFeedbackForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             <Plus size={18} />
             Add Feedback
           </button>
           <button
+            onClick={handleGenerateFeedbackLink}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            <FileText size={18} />
+            QR Code
+          </button>
+          <button
             onClick={() => handleExportData('feedback')}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded"
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
             <Download size={18} />
-            Export
+            Export All
+          </button>
+          <button
+            onClick={() => handleExportFilteredFeedback('negative')}
+            className="flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm"
+          >
+            Negative Only
+          </button>
+          <button
+            onClick={() => handleExportFilteredFeedback('needsFollowUp')}
+            className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 text-sm"
+          >
+            Follow-Up Queue
           </button>
         </div>
         <select
@@ -863,6 +1088,41 @@ const ClinicOpsSuite = () => {
               </select>
             </div>
             <div className="md:col-span-2">
+              <label className="flex items-center gap-2 text-sm mb-2">
+                <input
+                  type="checkbox"
+                  checked={newFeedback.isAnonymous}
+                  onChange={(e) => setNewFeedback({...newFeedback, isAnonymous: e.target.checked})}
+                  className="rounded"
+                />
+                Anonymous Feedback
+              </label>
+            </div>
+            {!newFeedback.isAnonymous && (
+              <>
+                <div>
+                  <label className="block text-sm mb-1">Patient Name</label>
+                  <input
+                    type="text"
+                    value={newFeedback.patientName}
+                    onChange={(e) => setNewFeedback({...newFeedback, patientName: e.target.value})}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Contact (Email/Phone)</label>
+                  <input
+                    type="text"
+                    value={newFeedback.patientContact}
+                    onChange={(e) => setNewFeedback({...newFeedback, patientContact: e.target.value})}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Optional"
+                  />
+                </div>
+              </>
+            )}
+            <div className="md:col-span-2">
               <label className="block text-sm mb-1">Comments *</label>
               <textarea
                 value={newFeedback.comments}
@@ -874,7 +1134,7 @@ const ClinicOpsSuite = () => {
           </div>
           <button
             onClick={handleAddFeedback}
-            className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded"
+            className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             <Save size={18} />
             Save
@@ -882,9 +1142,66 @@ const ClinicOpsSuite = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sentiment Trend Over Time */}
+        <div className="bg-white p-6 rounded-lg shadow lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4">Sentiment Trends (Last 30 Days)</h3>
+          {sentimentTrendData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={sentimentTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis label={{ value: '%', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Line dataKey="positive" stroke="#4CAF50" name="Positive %" strokeWidth={2} />
+                <Line dataKey="neutral" stroke="#FFC107" name="Neutral %" strokeWidth={2} />
+                <Line dataKey="negative" stroke="#F44336" name="Negative %" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-500">
+              Add feedback data to see trends
+            </div>
+          )}
+        </div>
+
+        {/* Service Line Benchmarking */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Sentiment ({filteredFeedback.length})</h3>
+          <h3 className="text-lg font-semibold mb-4">Service Line Performance</h3>
+          <div className="space-y-4">
+            {serviceLineSatisfaction.map(line => (
+              <div key={line.name} className="border-b pb-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">{line.name}</span>
+                  <span className="text-sm text-gray-600">{line.count} reviews</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          line.satisfaction >= 80 ? 'bg-green-600' :
+                          line.satisfaction >= 60 ? 'bg-yellow-600' : 'bg-red-600'
+                        }`}
+                        style={{ width: `${line.satisfaction}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold w-16 text-right">
+                    {line.satisfaction}%
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Avg Rating: {line.avgRating}/5
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-4">Sentiment Distribution ({filteredFeedback.length})</h3>
           {sentimentData.some(d => d.value > 0) ? (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
@@ -910,29 +1227,109 @@ const ClinicOpsSuite = () => {
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Recent Feedback</h3>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+        <div className="bg-white p-6 rounded-lg shadow lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4">Recent Feedback & Action Center</h3>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
             {filteredFeedback.length > 0 ? (
               filteredFeedback.map(f => (
-                <div key={f.id} className="border-l-4 border-blue-500 pl-3 py-2">
-                  <div className="flex justify-between items-start">
+                <div key={f.id} className={`border-l-4 p-4 rounded-r ${
+                  f.sentiment === 'positive' ? 'border-green-500 bg-green-50' :
+                  f.sentiment === 'neutral' ? 'border-yellow-500 bg-yellow-50' :
+                  'border-red-500 bg-red-50'
+                }`}>
+                  <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
-                      <p className="text-sm text-gray-700">{f.comments}</p>
-                      <div className="flex items-center mt-1">
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          f.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
-                          f.sentiment === 'neutral' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs px-2 py-1 rounded font-semibold ${
+                          f.sentiment === 'positive' ? 'bg-green-200 text-green-800' :
+                          f.sentiment === 'neutral' ? 'bg-yellow-200 text-yellow-800' :
+                          'bg-red-200 text-red-800'
                         }`}>
                           {f.sentiment}
                         </span>
-                        <span className="ml-2 text-xs text-gray-600">Rating: {f.rating}/5</span>
+                        <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                          {f.serviceLine}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          f.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                          f.status === 'responded' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {f.status}
+                        </span>
+                        {f.needsFollowUp && !f.followUpCompleted && (
+                          <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-800 flex items-center gap-1">
+                            <Bell size={12} />
+                            Follow-up needed
+                          </span>
+                        )}
                       </div>
+                      <p className="text-sm text-gray-700 mb-2">{f.comments}</p>
+                      {!f.isAnonymous && f.patientName && (
+                        <p className="text-xs text-gray-600">
+                          <strong>Patient:</strong> {f.patientName}
+                          {f.patientContact && ` | ${f.patientContact}`}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Rating: {f.rating}/5 | Date: {f.date}
+                      </p>
+                      {f.response && (
+                        <div className="mt-2 p-2 bg-white rounded border border-blue-200">
+                          <p className="text-xs text-gray-600"><strong>Response:</strong> {f.response}</p>
+                        </div>
+                      )}
+                      {f.followUpNotes && (
+                        <div className="mt-2 p-2 bg-white rounded border border-green-200">
+                          <p className="text-xs text-gray-600"><strong>Follow-up:</strong> {f.followUpNotes}</p>
+                        </div>
+                      )}
                     </div>
                     <button onClick={() => handleDeleteFeedback(f.id)} className="text-red-600 ml-2">
                       <Trash2 size={14} />
                     </button>
+                  </div>
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {f.status === 'pending' && (
+                      <button
+                        onClick={() => {
+                          setSelectedFeedbackForResponse(f);
+                          setShowResponseModal(true);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                      >
+                        <MessageSquare size={12} />
+                        Reply
+                      </button>
+                    )}
+                    {f.status !== 'resolved' && (
+                      <button
+                        onClick={() => handleMarkAsResolved(f.id)}
+                        className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                      >
+                        <CheckCircle size={12} />
+                        Mark Resolved
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleCreateTaskFromFeedback(f)}
+                      className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
+                    >
+                      <Plus size={12} />
+                      Create Task
+                    </button>
+                    {f.needsFollowUp && !f.followUpCompleted && (
+                      <button
+                        onClick={() => {
+                          setSelectedFeedbackForFollowUp(f);
+                          setShowFollowUpModal(true);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700"
+                      >
+                        <Users size={12} />
+                        Contact Patient
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -1214,6 +1611,135 @@ const ClinicOpsSuite = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Feedback Collection</h3>
+              <button onClick={() => setShowQRModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Share this link for patients to submit feedback:</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={feedbackLink}
+                    readOnly
+                    className="flex-1 px-3 py-2 border rounded bg-gray-50 text-sm"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(feedbackLink);
+                      alert('Link copied!');
+                    }}
+                    className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <div className="text-center p-6 bg-gray-50 rounded">
+                <div className="text-6xl mb-2">📱</div>
+                <p className="text-sm text-gray-600">
+                  QR Code generation available in production build
+                </p>
+              </div>
+              <p className="text-xs text-gray-500">
+                Post this in waiting rooms or include in post-visit emails
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Response Modal */}
+      {showResponseModal && selectedFeedbackForResponse && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Respond to Feedback</h3>
+              <button onClick={() => setShowResponseModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="p-3 bg-gray-50 rounded">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Original Feedback:</strong>
+                </p>
+                <p className="text-sm">{selectedFeedbackForResponse.comments}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Rating: {selectedFeedbackForResponse.rating}/5 | {selectedFeedbackForResponse.serviceLine}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Your Response:</label>
+                <textarea
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  rows={5}
+                  placeholder="Thank you for your feedback. We appreciate..."
+                />
+              </div>
+              <button
+                onClick={handleRespondToFeedback}
+                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              >
+                Save Response
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Follow-Up Modal */}
+      {showFollowUpModal && selectedFeedbackForFollowUp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Patient Follow-Up</h3>
+              <button onClick={() => setShowFollowUpModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="p-3 bg-red-50 rounded border border-red-200">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Negative Feedback:</strong>
+                </p>
+                <p className="text-sm">{selectedFeedbackForFollowUp.comments}</p>
+                {selectedFeedbackForFollowUp.patientContact && (
+                  <p className="text-sm mt-2">
+                    <strong>Contact:</strong> {selectedFeedbackForFollowUp.patientContact}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Follow-Up Notes:</label>
+                <textarea
+                  value={followUpNotes}
+                  onChange={(e) => setFollowUpNotes(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  rows={5}
+                  placeholder="Called patient on [date]. Discussed concerns about... Resolved by..."
+                />
+              </div>
+              <button
+                onClick={handleSaveFollowUp}
+                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+              >
+                Save Follow-Up
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Settings Modal */}
       {showSettingsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
