@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { getDefaultAvatar } from "@/utils/avatarHelper";
 
 
 export default function Auth() {
@@ -24,6 +25,13 @@ export default function Auth() {
     localStorage.setItem("userEmail", email);
     localStorage.setItem("isLoggedIn", "true");
     // No firstTimeUser flag for returning users
+    
+    // Set default AI avatar if user doesn't have one
+    const avatarKey = `avatar_${email}`;
+    if (!localStorage.getItem(avatarKey)) {
+      const defaultAvatar = getDefaultAvatar(email);
+      localStorage.setItem(avatarKey, defaultAvatar);
+    }
     
     // Simulate login
     setTimeout(() => {
@@ -44,6 +52,10 @@ export default function Auth() {
     localStorage.setItem("userEmail", email);
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("firstTimeUser", "true"); // Mark as first-time user
+    
+    // Set default AI avatar based on email
+    const defaultAvatar = getDefaultAvatar(email);
+    localStorage.setItem(`avatar_${email}`, defaultAvatar);
     
     // Simulate signup
     setTimeout(() => {
