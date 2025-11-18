@@ -252,10 +252,6 @@ const Dashboard = () => {
     setActivityDialogOpen(true);
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Filtered kanban tasks by status
   const displayedTasks = useMemo(() => {
     if (!kanbanStatusFilter) return filteredTasks;
