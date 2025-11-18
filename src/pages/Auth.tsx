@@ -17,6 +17,13 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
     
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    
+    // Store user session
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("isLoggedIn", "true");
+    
     // Simulate login
     setTimeout(() => {
       setIsLoading(false);
@@ -28,6 +35,13 @@ export default function Auth() {
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("signup-email") as string;
+    
+    // Store user session
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("isLoggedIn", "true");
     
     // Simulate signup
     setTimeout(() => {
@@ -71,6 +85,7 @@ export default function Auth() {
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
                       placeholder="your.email@chihealth.com"
                       required
@@ -106,6 +121,7 @@ export default function Auth() {
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
                       id="signup-email"
+                      name="signup-email"
                       type="email"
                       placeholder="your.email@chihealth.com"
                       required
