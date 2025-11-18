@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import medOpsXLogo from "@/assets/medopsx-logo.png";
+
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -65,13 +65,9 @@ export default function Auth() {
           Back to Welcome
         </Button>
 
-        <div className="flex justify-center mb-8">
-          <img src={medOpsXLogo} alt="Med OpsX" className="h-24 w-auto" />
-        </div>
-
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Med OpsX</CardTitle>
+            <CardTitle className="text-3xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Med OpsX</CardTitle>
             <CardDescription>Access your healthcare operations dashboard</CardDescription>
           </CardHeader>
           <CardContent>
