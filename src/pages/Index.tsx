@@ -228,12 +228,12 @@ const Dashboard = () => {
 
   // Render functions
   const renderStatCard = (icon: any, stat: any) => (
-    <Card className="bg-card/50 border-border/50 hover:border-primary/50 transition-all">
+    <Card variant="glass-strong" className="hover:scale-[1.02] transition-all duration-300">
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{stat.label}</p>
-            <p className="text-3xl font-bold">{stat.value}</p>
+            <p className="text-3xl font-bold gradient-text">{stat.value}</p>
             <div className="flex items-center gap-1 text-success">
               <TrendingUp className="h-4 w-4" />
               <span className="text-sm">+{stat.trend}%</span>
@@ -255,7 +255,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card variant="glass" className="animate-fade-in">
           <CardHeader>
             <CardTitle>Patient Satisfaction Trend</CardTitle>
           </CardHeader>
@@ -272,13 +272,13 @@ const Dashboard = () => {
                     borderRadius: '6px'
                   }}
                 />
-                <Line type="monotone" dataKey="satisfaction" stroke="hsl(var(--primary))" strokeWidth={2} />
+                <Line type="monotone" dataKey="satisfaction" stroke="hsl(var(--primary))" strokeWidth={3} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="glass" className="animate-fade-in">
           <CardHeader>
             <CardTitle>Service Line Performance</CardTitle>
           </CardHeader>
@@ -302,7 +302,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card>
+      <Card variant="glass" className="animate-fade-in-up">
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
@@ -355,15 +355,15 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="bg-card/50">
+        <Card variant="glass-strong" className="animate-scale-in">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold">{feedbackStats.total}</p>
+              <p className="text-2xl font-bold gradient-text">{feedbackStats.total}</p>
               <p className="text-sm text-muted-foreground">Total Feedback</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card/50">
+        <Card variant="glass-strong" className="animate-scale-in">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-success">{feedbackStats.positive}</p>
@@ -371,7 +371,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card/50">
+        <Card variant="glass-strong" className="animate-scale-in">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-warning">{feedbackStats.neutral}</p>
@@ -379,7 +379,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card/50">
+        <Card variant="glass-strong" className="animate-scale-in">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-destructive">{feedbackStats.negative}</p>
@@ -387,17 +387,17 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card/50">
+        <Card variant="glass-strong" className="animate-scale-in">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold">{feedbackStats.avgRating}</p>
+              <p className="text-2xl font-bold gradient-text">{feedbackStats.avgRating}</p>
               <p className="text-sm text-muted-foreground">Avg Rating</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card variant="glass">
         <CardHeader>
           <CardTitle>Recent Feedback</CardTitle>
         </CardHeader>
@@ -505,18 +505,19 @@ const Dashboard = () => {
           {columns.map(col => (
             <Card 
               key={col.status} 
-              className={`cursor-pointer transition-all ${
+              variant="glass-strong"
+              className={`cursor-pointer transition-all duration-300 ${
                 kanbanStatusFilter === col.status 
-                  ? 'border-primary shadow-lg' 
+                  ? 'ring-2 ring-primary shadow-[0_0_30px_hsl(195_100%_55%/0.4)]' 
                   : kanbanStatusFilter && kanbanStatusFilter !== col.status
                   ? 'opacity-40'
-                  : 'hover:border-primary/50'
+                  : 'hover:scale-[1.02]'
               }`}
               onClick={() => handleKanbanStatusClick(col.status)}
             >
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <p className="text-2xl font-bold">{col.count}</p>
+                  <p className="text-2xl font-bold gradient-text">{col.count}</p>
                   <p className="text-sm text-muted-foreground">{col.title}</p>
                 </div>
               </CardContent>
@@ -540,7 +541,7 @@ const Dashboard = () => {
                 key={col.status} 
                 className={`transition-opacity ${isVisible ? 'opacity-100' : 'opacity-0 hidden'}`}
               >
-                <Card>
+                <Card variant="glass">
                   <CardHeader>
                     <CardTitle className="text-sm">{col.title} ({tasks.length})</CardTitle>
                   </CardHeader>
@@ -599,7 +600,8 @@ const Dashboard = () => {
           {providerStats.map(provider => (
             <Card 
               key={provider.id}
-              className="cursor-pointer hover:border-primary/50 transition-all"
+              variant="glass"
+              className="cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_25px_hsl(195_100%_55%/0.3)] transition-all duration-300"
               onClick={() => handleProviderCardClick(provider)}
             >
               <CardContent className="pt-6">
@@ -632,7 +634,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <Card>
+        <Card variant="glass">
           <CardHeader>
             <CardTitle>Upcoming Appointments</CardTitle>
           </CardHeader>
