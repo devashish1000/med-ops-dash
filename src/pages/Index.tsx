@@ -672,56 +672,78 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Healthcare Operations Dashboard
+              CHI Operations Portal
             </h1>
             <p className="text-muted-foreground">Real-time insights and analytics</p>
           </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = "/"}>
+              Welcome
+            </Button>
+            <Button variant="outline" onClick={() => window.location.href = "/auth"}>
+              Login
+            </Button>
+          </div>
         </div>
 
-        {/* Date Filter */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">Filter by Date Range:</span>
-              <DateRangeFilter
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-              />
-              {(startDate || endDate) && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    setStartDate(undefined);
-                    setEndDate(undefined);
-                  }}
-                >
-                  Clear
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Navigation & Date Filter */}
+        <div className="flex flex-wrap items-center gap-4 justify-between">
+          <div className="flex gap-2">
+            {[
+              { id: "dashboard", label: "Dashboard", icon: TrendingUp },
+              { id: "feedback", label: "Feedback", icon: MessageSquare },
+              { id: "kanban", label: "Tasks", icon: CheckSquare },
+            ].map(nav => (
+              <Button
+                key={nav.id}
+                variant={activeView === nav.id ? "default" : "outline"}
+                onClick={() => setActiveView(nav.id as any)}
+              >
+                <nav.icon className="mr-2 h-4 w-4" />
+                {nav.label}
+              </Button>
+            ))}
+          </div>
 
-        {/* Navigation */}
-        <div className="flex gap-2">
-          {[
-            { id: "dashboard", label: "Dashboard", icon: TrendingUp },
-            { id: "feedback", label: "Feedback", icon: MessageSquare },
-            { id: "kanban", label: "Tasks", icon: CheckSquare },
-            { id: "schedule", label: "Schedule", icon: Calendar }
-          ].map(nav => (
+          {/* Date Filter - inline */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium">Date Range:</span>
+            <DateRangeFilter
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+            {(startDate || endDate) && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+
+          <div className="flex gap-2">
             <Button
-              key={nav.id}
-              variant={activeView === nav.id ? "default" : "outline"}
-              onClick={() => setActiveView(nav.id as any)}
+              variant={activeView === "schedule" ? "default" : "outline"}
+              onClick={() => setActiveView("schedule")}
             >
-              <nav.icon className="mr-2 h-4 w-4" />
-              {nav.label}
+              <Calendar className="mr-2 h-4 w-4" />
+              Schedule
             </Button>
-          ))}
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/optimization"}
+            >
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Optimization
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
