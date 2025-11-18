@@ -857,7 +857,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              CHI Operations Portal
+              Med OpsX
             </h1>
             <p className="text-muted-foreground">Real-time insights and analytics</p>
           </div>

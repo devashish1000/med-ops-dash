@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import chiLogo from "@/assets/chi-health-logo.png";
+import medOpsXLogo from "@/assets/medopsx-logo.png";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -66,12 +66,12 @@ export default function Auth() {
         </Button>
 
         <div className="flex justify-center mb-8">
-          <img src={chiLogo} alt="CHI Health" className="h-24 w-auto" />
+          <img src={medOpsXLogo} alt="Med OpsX" className="h-24 w-auto" />
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>CHI Operations Portal</CardTitle>
+            <CardTitle>Med OpsX</CardTitle>
             <CardDescription>Access your healthcare operations dashboard</CardDescription>
           </CardHeader>
           <CardContent>
