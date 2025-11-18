@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import Joyride, { Step, CallBackProps, STATUS, ACTIONS, EVENTS } from "react-joyride";
+import Joyride, { Step, CallBackProps, STATUS, ACTIONS, EVENTS, TooltipRenderProps } from "react-joyride";
+import { useTourAnalytics } from "@/hooks/useTourAnalytics";
 
 interface OnboardingTourProps {
   run?: boolean;
@@ -9,16 +10,119 @@ interface OnboardingTourProps {
   currentPage?: string;
 }
 
+const CustomTooltip = ({
+  continuous,
+  index,
+  step,
+  backProps,
+  closeProps,
+  primaryProps,
+  skipProps,
+  tooltipProps,
+}: TooltipRenderProps) => {
+  // Define page ranges
+  const pageRanges = [
+    { start: 0, end: 3, name: "Dashboard" },
+    { start: 4, end: 7, name: "Feedback" },
+    { start: 8, end: 10, name: "Tasks" },
+    { start: 11, end: 13, name: "Schedule" },
+    { start: 14, end: 20, name: "Optimization" },
+    { start: 21, end: 21, name: "Complete" },
+  ];
+
+  const currentPage = pageRanges.find(
+    (range) => index >= range.start && index <= range.end
+  );
+  const pageNumber = pageRanges.findIndex(
+    (range) => index >= range.start && index <= range.end
+  ) + 1;
+
+  return (
+    <div
+      {...tooltipProps}
+      style={{
+        backgroundColor: "hsl(var(--card))",
+        borderRadius: "8px",
+        padding: "20px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+      }}
+    >
+      {currentPage && pageNumber <= 5 && (
+        <div style={{ marginBottom: "12px", fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>
+          Page {pageNumber} of 5: {currentPage.name}
+        </div>
+      )}
+      <div style={{ marginBottom: "16px", color: "hsl(var(--foreground))" }}>
+        {step.content}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <button {...skipProps} style={{ color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer" }}>
+          {skipProps.title}
+        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {index > 0 && (
+            <button
+              {...backProps}
+              style={{
+                color: "hsl(var(--foreground))",
+                background: "none",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
+              {backProps.title}
+            </button>
+          )}
+          {continuous && (
+            <button
+              {...primaryProps}
+              style={{
+                backgroundColor: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+                border: "none",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
+              {primaryProps.title}
+            </button>
+          )}
+          {!continuous && (
+            <button
+              {...closeProps}
+              style={{
+                backgroundColor: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+                border: "none",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
+              {closeProps.title}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function OnboardingTour({ run = false, onComplete, onNavigate, currentView, currentPage }: OnboardingTourProps) {
   const [runTour, setRunTour] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const { startTourSession, trackStepEvent, completeTourSession, skipTourSession } = useTourAnalytics();
 
   useEffect(() => {
     if (run) {
       setStepIndex(0);
+      startTourSession();
       setTimeout(() => setRunTour(true), 500);
     }
-  }, [run]);
+  }, [run, startTourSession]);
 
   // All tour steps across all pages
   const allSteps: Step[] = [
@@ -152,7 +256,31 @@ export function OnboardingTour({ run = false, onComplete, onNavigate, currentVie
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
+    // Track step events
+    const step = allSteps[index];
+    const stepTarget = typeof step.target === "string" ? step.target : "body";
+
+    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      trackStepEvent({
+        stepIndex: index,
+        stepTarget,
+        action: action === ACTIONS.NEXT ? "complete" : action === ACTIONS.PREV ? "back" : "view",
+        timestamp: Date.now(),
+      });
+    }
+
     if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {
+      if (status === STATUS.FINISHED) {
+        completeTourSession();
+      } else {
+        skipTourSession();
+        trackStepEvent({
+          stepIndex: index,
+          stepTarget,
+          action: "skip",
+          timestamp: Date.now(),
+        });
+      }
       setRunTour(false);
       setStepIndex(0);
       onComplete?.();
@@ -210,6 +338,7 @@ export function OnboardingTour({ run = false, onComplete, onNavigate, currentVie
       showProgress
       showSkipButton
       callback={handleJoyrideCallback}
+      tooltipComponent={CustomTooltip}
       styles={{
         options: {
           primaryColor: "hsl(var(--primary))",
@@ -217,25 +346,12 @@ export function OnboardingTour({ run = false, onComplete, onNavigate, currentVie
         },
         spotlight: {
           backgroundColor: "transparent",
+          border: "3px solid hsl(var(--primary))",
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 30px 10px hsl(var(--primary) / 0.6), 0 0 60px 20px hsl(var(--primary) / 0.4), inset 0 0 30px 5px hsl(var(--primary) / 0.3)",
+          animation: "pulse-glow 2s ease-in-out infinite",
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-        },
-        tooltip: {
-          borderRadius: "8px",
-          padding: "20px",
-        },
-        buttonNext: {
-          backgroundColor: "hsl(var(--primary))",
-          borderRadius: "6px",
-          padding: "8px 16px",
-        },
-        buttonBack: {
-          color: "hsl(var(--foreground))",
-          marginRight: "8px",
-        },
-        buttonSkip: {
-          color: "hsl(var(--muted-foreground))",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
         },
       }}
       locale={{
