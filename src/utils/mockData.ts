@@ -5,7 +5,7 @@ export interface FeedbackRecord {
   id: string;
   date: Date;
   patientName: string | null;
-  serviceLine: "Neurology" | "Pain Management" | "PM&R";
+  serviceLine: "Neurology" | "Pain Management" | "PM&R" | "Orthopedics" | "Cardiology" | "Primary Care" | "Physical Therapy" | "Sports Medicine";
   rating: 1 | 2 | 3 | 4 | 5;
   sentiment: "positive" | "neutral" | "negative";
   comment: string;
@@ -41,14 +41,14 @@ export interface Appointment {
   endTime: string;
   patientName: string;
   type: "New Patient" | "Follow-up" | "Procedure" | "Consultation";
-  serviceLine: "Neurology" | "Pain Management" | "PM&R";
+  serviceLine: "Neurology" | "Pain Management" | "PM&R" | "Orthopedics" | "Cardiology" | "Primary Care" | "Physical Therapy" | "Sports Medicine";
   status: "Scheduled" | "Completed" | "Cancelled" | "No-Show";
 }
 
 export interface Provider {
   id: string;
   name: string;
-  specialty: "Neurology" | "Pain Management" | "PM&R";
+  specialty: "Neurology" | "Pain Management" | "PM&R" | "Orthopedics" | "Cardiology" | "Primary Care" | "Physical Therapy" | "Sports Medicine";
   color: string;
 }
 
@@ -59,6 +59,11 @@ export const providers: Provider[] = [
   { id: "p3", name: "Dr. Emily Johnson", specialty: "PM&R", color: "#8b5cf6" },
   { id: "p4", name: "Dr. James Williams", specialty: "Neurology", color: "#3b82f6" },
   { id: "p5", name: "Dr. Lisa Anderson", specialty: "Pain Management", color: "#ec4899" },
+  { id: "p6", name: "Dr. Robert Martinez", specialty: "Orthopedics", color: "#06b6d4" },
+  { id: "p7", name: "Dr. Amanda Foster", specialty: "Cardiology", color: "#ef4444" },
+  { id: "p8", name: "Dr. David Thompson", specialty: "Primary Care", color: "#22c55e" },
+  { id: "p9", name: "Dr. Jennifer Lee", specialty: "Physical Therapy", color: "#a855f7" },
+  { id: "p10", name: "Dr. Christopher Brown", specialty: "Sports Medicine", color: "#f97316" },
 ];
 
 // Comments templates
@@ -121,7 +126,8 @@ export function generateFeedback(): FeedbackRecord[] {
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const patientName = isAnonymous ? null : `${firstName} ${lastName}`;
 
-    const serviceLines: ("Neurology" | "Pain Management" | "PM&R")[] = ["Neurology", "Pain Management", "PM&R"];
+    const serviceLines: ("Neurology" | "Pain Management" | "PM&R" | "Orthopedics" | "Cardiology" | "Primary Care" | "Physical Therapy" | "Sports Medicine")[] = 
+      ["Neurology", "Pain Management", "PM&R", "Orthopedics", "Cardiology", "Primary Care", "Physical Therapy", "Sports Medicine"];
     const serviceLine = serviceLines[Math.floor(Math.random() * serviceLines.length)];
 
     let comment = "";

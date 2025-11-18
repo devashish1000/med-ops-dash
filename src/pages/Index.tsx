@@ -178,7 +178,8 @@ const Dashboard = () => {
 
   // Service line performance
   const serviceLinePerformance = useMemo(() => {
-    return ["Neurology", "Pain Management", "PM&R"].map(service => {
+    const serviceLines = ["Neurology", "Pain Management", "PM&R", "Orthopedics", "Cardiology", "Primary Care", "Physical Therapy", "Sports Medicine"];
+    return serviceLines.map(service => {
       const serviceFeedback = filteredFeedback.filter(f => f.serviceLine === service);
       const avgRating = serviceFeedback.length > 0 
         ? (serviceFeedback.reduce((sum, f) => sum + f.rating, 0) / serviceFeedback.length).toFixed(1)
@@ -435,6 +436,11 @@ const Dashboard = () => {
               <SelectItem value="Neurology">Neurology</SelectItem>
               <SelectItem value="Pain Management">Pain Management</SelectItem>
               <SelectItem value="PM&R">PM&R</SelectItem>
+              <SelectItem value="Orthopedics">Orthopedics</SelectItem>
+              <SelectItem value="Cardiology">Cardiology</SelectItem>
+              <SelectItem value="Primary Care">Primary Care</SelectItem>
+              <SelectItem value="Physical Therapy">Physical Therapy</SelectItem>
+              <SelectItem value="Sports Medicine">Sports Medicine</SelectItem>
             </SelectContent>
           </Select>
         </div>
