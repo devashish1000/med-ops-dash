@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle, Calendar, Info, Download, Users, BarChart3, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { OptimizationTour } from "@/components/OptimizationTour";
 import {
   Select,
   SelectContent,
@@ -172,6 +173,19 @@ export default function Optimization() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [forecastPeriod, setForecastPeriod] = useState("90");
+  const [startTour, setStartTour] = useState(false);
+
+  // Check if tour is in progress when page loads
+  useState(() => {
+    const tourInProgress = localStorage.getItem("tour-in-progress");
+    
+    if (tourInProgress === "true") {
+      setTimeout(() => {
+        setStartTour(true);
+        localStorage.removeItem("tour-in-progress");
+      }, 500);
+    }
+  });
 
   // Parse timeframe to get days
   const parseTimeframeToDays = (timeframe: string): number => {
@@ -416,6 +430,7 @@ export default function Optimization() {
 
   return (
     <div className="min-h-screen bg-background p-6">
+      <OptimizationTour run={startTour} onComplete={() => setStartTour(false)} />
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -448,7 +463,7 @@ export default function Optimization() {
                   </div>
                 </div>
                 <Select value={forecastPeriod} onValueChange={setForecastPeriod}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-[140px]" data-tour="forecast-period">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -490,7 +505,7 @@ export default function Optimization() {
             <CardDescription>Recommendations ranked by impact vs. effort</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-tour="dynamic-kpis">
               <Card className="border-green-500/50 bg-green-500/5">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 mb-2">
@@ -527,7 +542,7 @@ export default function Optimization() {
 
         {/* Quick Wins */}
         {quickWins.length > 0 ? (
-        <div>
+        <div data-tour="recommendations">
           <div className="flex items-center gap-2 mb-4">
             <Badge variant="default" className="bg-green-500">Quick Wins</Badge>
             <span className="text-sm text-muted-foreground">High impact, low effort - implement immediately ({quickWins.length} recommendations)</span>
@@ -764,7 +779,7 @@ export default function Optimization() {
             </div>
             <CardDescription>Patient volume, revenue, and satisfaction across all service lines</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent data-tour="service-comparison">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
                 <h4 className="font-semibold mb-3 text-center">Patient Volume</h4>
@@ -833,7 +848,7 @@ export default function Optimization() {
             </div>
             <CardDescription>Patient movement between specialties</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent data-tour="referral-tracking">
             <div className="space-y-3">
               {referralData.map((referral, idx) => (
                 <div key={idx} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
@@ -863,7 +878,7 @@ export default function Optimization() {
             </div>
             <CardDescription>Weekly capacity utilization heat map by provider</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent data-tour="capacity-heatmap">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>

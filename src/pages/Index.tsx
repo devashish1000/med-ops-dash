@@ -269,7 +269,12 @@ const Dashboard = () => {
 
   const handleRestartTour = () => {
     setStartTour(true);
+    setActiveView("dashboard"); // Start from dashboard
     sonnerToast.success("Tour restarted! Follow the highlights.");
+  };
+
+  const handleTourNavigate = (view: string) => {
+    setActiveView(view as any);
   };
 
   const handleActivityCardClick = (feedback: FeedbackRecord) => {
@@ -319,7 +324,7 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle>Patient Satisfaction Trend</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent data-tour="satisfaction-chart">
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={metrics}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -464,7 +469,7 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" data-tour="feedback-stats">
         <Card variant="glass-strong" className="animate-scale-in">
           <CardContent className="pt-6">
             <div className="text-center">
@@ -611,7 +616,7 @@ const Dashboard = () => {
 
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="kanban-stats">
           {columns.map(col => (
             <Card 
               key={col.status} 
@@ -641,7 +646,7 @@ const Dashboard = () => {
           </Button>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="kanban-board">
           {columns.map(col => {
             const tasks = displayedTasks.filter(t => t.status === col.status);
             const isVisible = !kanbanStatusFilter || kanbanStatusFilter === col.status;
@@ -832,7 +837,12 @@ const Dashboard = () => {
 
   return (
     <>
-      <OnboardingTour run={startTour} />
+      <OnboardingTour 
+        run={startTour} 
+        onNavigate={handleTourNavigate}
+        currentView={activeView}
+        onComplete={() => setStartTour(false)}
+      />
       {isCheckingAuth ? (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center space-y-4">
