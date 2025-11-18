@@ -45,9 +45,11 @@ const Welcome = () => {
                 View Dashboard <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-lg px-8">
-              Watch Demo
-            </Button>
+            <Link to="/auth">
+              <Button size="lg" variant="outline" className="text-lg px-8">
+                Login / Sign Up
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
