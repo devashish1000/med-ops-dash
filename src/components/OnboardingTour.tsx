@@ -22,28 +22,33 @@ export function OnboardingTour({ run = false, onComplete }: OnboardingTourProps)
   const steps: Step[] = [
     {
       target: "body",
-      content: "Welcome to CHI Health Optimization Dashboard! Let's take a quick tour of the key features.",
+      content: "Welcome to CHI Health Operations Dashboard! Let's take a quick tour of the key features.",
       placement: "center",
       disableBeacon: true,
     },
     {
-      target: '[data-tour="nav-dashboard"]',
-      content: "Access your main dashboard here to view key metrics and insights.",
+      target: '[data-tour="kpi-cards"]',
+      content: "View your key performance indicators here - patient volume, revenue, utilization, and satisfaction scores.",
       disableBeacon: true,
     },
     {
-      target: '[data-tour="nav-optimization"]',
-      content: "Visit the Optimization page to analyze performance and get AI-powered recommendations.",
+      target: '[data-tour="nav-tabs"]',
+      content: "Switch between different views: Dashboard, Patient Feedback, Task Board, and Schedule Management.",
       disableBeacon: true,
     },
     {
-      target: '[data-tour="service-lines"]',
-      content: "These are your 8 service lines. Each card shows real-time metrics and status.",
+      target: '[data-tour="service-line-filter"]',
+      content: "Filter data by service line to focus on specific departments like Neurology, Cardiology, or Primary Care.",
       disableBeacon: true,
     },
     {
-      target: '[data-tour="quick-actions"]',
-      content: "Quick actions to view analytics, schedule appointments, and access feedback.",
+      target: '[data-tour="feedback-section"]',
+      content: "Monitor patient feedback with sentiment analysis and respond directly to concerns.",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="optimization-link"]',
+      content: "Visit the Optimization page to get AI-powered recommendations and forecasting insights.",
       disableBeacon: true,
     },
   ];

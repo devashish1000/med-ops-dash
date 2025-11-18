@@ -23,6 +23,7 @@ export default function Auth() {
     // Store user session
     localStorage.setItem("userEmail", email);
     localStorage.setItem("isLoggedIn", "true");
+    // No firstTimeUser flag for returning users
     
     // Simulate login
     setTimeout(() => {
@@ -42,6 +43,7 @@ export default function Auth() {
     // Store user session
     localStorage.setItem("userEmail", email);
     localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("firstTimeUser", "true"); // Mark as first-time user
     
     // Simulate signup
     setTimeout(() => {

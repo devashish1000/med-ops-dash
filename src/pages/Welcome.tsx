@@ -2,25 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BarChart3, MessageSquare, CheckSquare, Calendar, TrendingUp, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import chiHealthLogo from "@/assets/chi-health-logo.png";
-import { OnboardingTour } from "@/components/OnboardingTour";
 
 const Welcome = () => {
   const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "tasks" | "schedule">("analytics");
-  const [startTour, setStartTour] = useState(false);
-
-  useEffect(() => {
-    // Check if user has seen the tour
-    const tourCompleted = localStorage.getItem("onboarding-tour-completed");
-    if (!tourCompleted) {
-      setStartTour(true);
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-x-hidden w-full">
-      <OnboardingTour run={startTour} />
       {/* Hero Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 max-w-full">
         <div className="text-center max-w-4xl mx-auto space-y-6">
