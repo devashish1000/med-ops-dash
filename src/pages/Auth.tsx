@@ -85,7 +85,7 @@ export default function Auth() {
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="your.email@chihealth.com"
+                      placeholder="Enter: test@chi.com"
                       required
                     />
                   </div>
@@ -94,7 +94,7 @@ export default function Auth() {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Enter: Any text"
                       required
                     />
                   </div>
@@ -121,7 +121,7 @@ export default function Auth() {
                       id="signup-email"
                       name="signup-email"
                       type="email"
-                      placeholder="your.email@chihealth.com"
+                      placeholder="Enter: test@chi.com"
                       required
                     />
                   </div>
@@ -130,7 +130,7 @@ export default function Auth() {
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Enter: Any text"
                       required
                     />
                   </div>
