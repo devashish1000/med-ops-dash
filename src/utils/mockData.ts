@@ -1,4 +1,14 @@
 import { addDays, subDays, subMonths, format } from "date-fns";
+import drSarahChen from "@/assets/providers/dr-sarah-chen.jpg";
+import drMichaelRodriguez from "@/assets/providers/dr-michael-rodriguez.jpg";
+import drEmilyJohnson from "@/assets/providers/dr-emily-johnson.jpg";
+import drJamesWilliams from "@/assets/providers/dr-james-williams.jpg";
+import drLisaAnderson from "@/assets/providers/dr-lisa-anderson.jpg";
+import drRobertMartinez from "@/assets/providers/dr-robert-martinez.jpg";
+import drAmandaFoster from "@/assets/providers/dr-amanda-foster.jpg";
+import drDavidThompson from "@/assets/providers/dr-david-thompson.jpg";
+import drJenniferLee from "@/assets/providers/dr-jennifer-lee.jpg";
+import drChristopherBrown from "@/assets/providers/dr-christopher-brown.jpg";
 
 // Types
 export interface FeedbackRecord {
@@ -50,20 +60,21 @@ export interface Provider {
   name: string;
   specialty: "Neurology" | "Pain Management" | "PM&R" | "Orthopedics" | "Cardiology" | "Primary Care" | "Physical Therapy" | "Sports Medicine";
   color: string;
+  image?: string;
 }
 
 // Providers
 export const providers: Provider[] = [
-  { id: "p1", name: "Dr. Sarah Chen", specialty: "Neurology", color: "#10b981" },
-  { id: "p2", name: "Dr. Michael Rodriguez", specialty: "Pain Management", color: "#f59e0b" },
-  { id: "p3", name: "Dr. Emily Johnson", specialty: "PM&R", color: "#8b5cf6" },
-  { id: "p4", name: "Dr. James Williams", specialty: "Neurology", color: "#3b82f6" },
-  { id: "p5", name: "Dr. Lisa Anderson", specialty: "Pain Management", color: "#ec4899" },
-  { id: "p6", name: "Dr. Robert Martinez", specialty: "Orthopedics", color: "#06b6d4" },
-  { id: "p7", name: "Dr. Amanda Foster", specialty: "Cardiology", color: "#ef4444" },
-  { id: "p8", name: "Dr. David Thompson", specialty: "Primary Care", color: "#22c55e" },
-  { id: "p9", name: "Dr. Jennifer Lee", specialty: "Physical Therapy", color: "#a855f7" },
-  { id: "p10", name: "Dr. Christopher Brown", specialty: "Sports Medicine", color: "#f97316" },
+  { id: "p1", name: "Dr. Sarah Chen", specialty: "Neurology", color: "#10b981", image: drSarahChen },
+  { id: "p2", name: "Dr. Michael Rodriguez", specialty: "Pain Management", color: "#f59e0b", image: drMichaelRodriguez },
+  { id: "p3", name: "Dr. Emily Johnson", specialty: "PM&R", color: "#8b5cf6", image: drEmilyJohnson },
+  { id: "p4", name: "Dr. James Williams", specialty: "Neurology", color: "#3b82f6", image: drJamesWilliams },
+  { id: "p5", name: "Dr. Lisa Anderson", specialty: "Pain Management", color: "#ec4899", image: drLisaAnderson },
+  { id: "p6", name: "Dr. Robert Martinez", specialty: "Orthopedics", color: "#06b6d4", image: drRobertMartinez },
+  { id: "p7", name: "Dr. Amanda Foster", specialty: "Cardiology", color: "#ef4444", image: drAmandaFoster },
+  { id: "p8", name: "Dr. David Thompson", specialty: "Primary Care", color: "#22c55e", image: drDavidThompson },
+  { id: "p9", name: "Dr. Jennifer Lee", specialty: "Physical Therapy", color: "#a855f7", image: drJenniferLee },
+  { id: "p10", name: "Dr. Christopher Brown", specialty: "Sports Medicine", color: "#f97316", image: drChristopherBrown },
 ];
 
 // Comments templates
