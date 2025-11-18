@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart } from 'recharts';
 import { TrendingUp, Users, DollarSign, Clock, Star, MessageSquare, CheckSquare, Calendar, Download, Flag, Reply, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { generateFeedback, generateKanbanTasks, generateAppointments, generateHistoricalMetrics, providers, FeedbackRecord, KanbanTask, Appointment } from '@/utils/mockData';
 import { updateFeedback, addAppointment as addAppointmentToStore, exportFeedbackToCSV, initializeStores } from '@/utils/mockDataHelpers';
@@ -191,6 +191,7 @@ const Dashboard = () => {
         name: service,
         avgRating: parseFloat(avgRating),
         positivePercent: parseFloat(positive),
+        target: 4.5, // Target rating for all service lines
       };
     });
   }, [filteredFeedback]);
@@ -360,10 +361,10 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={serviceLinePerformance}>
+              <ComposedChart data={serviceLinePerformance}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" domain={[0, 5]} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--popover))',
@@ -371,8 +372,17 @@ const Dashboard = () => {
                     borderRadius: '6px'
                   }}
                 />
-                <Bar dataKey="avgRating" fill="hsl(var(--primary))" />
-              </BarChart>
+                <Bar dataKey="avgRating" fill="hsl(var(--primary))" name="Current Rating" />
+                <Line 
+                  type="monotone" 
+                  dataKey="target" 
+                  stroke="hsl(var(--success))" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name="Target"
+                />
+              </ComposedChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle, Calendar, Info } from "lucide-react";
+import { ArrowLeft, TrendingUp, Clock, DollarSign, Heart, CheckCircle2, AlertCircle, Calendar, Info, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -18,6 +18,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import jsPDF from 'jspdf';
+import { useToast } from "@/hooks/use-toast";
 
 interface Recommendation {
   id: string;
@@ -167,10 +169,35 @@ const mockRecommendations: Recommendation[] = [
 
 export default function Optimization() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [forecastPeriod, setForecastPeriod] = useState("90");
 
-  const quickWins = mockRecommendations.filter(r => r.category === "quick-win");
-  const longTerm = mockRecommendations.filter(r => r.category === "long-term");
+  // Parse timeframe to get days
+  const parseTimeframeToDays = (timeframe: string): number => {
+    const match = timeframe.match(/(\d+)-?(\d+)?/);
+    if (!match) return 0;
+    
+    if (timeframe.includes("week")) {
+      const weeks = parseInt(match[2] || match[1]);
+      return weeks * 7;
+    } else if (timeframe.includes("month")) {
+      const months = parseInt(match[2] || match[1]);
+      return months * 30;
+    }
+    return parseInt(match[1]);
+  };
+
+  // Filter recommendations based on forecast period
+  const filteredRecommendations = useMemo(() => {
+    const forecastDays = parseInt(forecastPeriod);
+    return mockRecommendations.filter(rec => {
+      const implementationDays = parseTimeframeToDays(rec.timeframe);
+      return implementationDays <= forecastDays;
+    });
+  }, [forecastPeriod]);
+
+  const quickWins = filteredRecommendations.filter(r => r.category === "quick-win");
+  const longTerm = filteredRecommendations.filter(r => r.category === "long-term");
 
   const getEffortColor = (effort: string) => {
     switch (effort) {
@@ -189,6 +216,129 @@ export default function Optimization() {
     }
   };
 
+  const exportToPDF = () => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 15;
+    let yPosition = 20;
+
+    // Title
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Optimization Insights', margin, yPosition);
+    
+    yPosition += 10;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Forecast Period: ${forecastPeriod} Days`, margin, yPosition);
+    pdf.text(`Data Analysis: Oct 1 - Nov 15, 2025`, margin, yPosition + 5);
+    
+    yPosition += 15;
+
+    // Quick Wins Section
+    if (quickWins.length > 0) {
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Quick Wins', margin, yPosition);
+      yPosition += 8;
+
+      quickWins.forEach((rec, index) => {
+        if (yPosition > 250) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${index + 1}. ${rec.title}`, margin, yPosition);
+        yPosition += 6;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        
+        // Description
+        const descLines = pdf.splitTextToSize(rec.description, pageWidth - 2 * margin);
+        pdf.text(descLines, margin + 3, yPosition);
+        yPosition += descLines.length * 4 + 2;
+
+        // Timeline info
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Start: ${rec.implementationDate}`, margin + 3, yPosition);
+        pdf.text(`ROI Visible: ${rec.benefitRealizationDate}`, margin + 70, yPosition);
+        yPosition += 5;
+
+        // Expected ROI
+        pdf.text('Expected ROI: ', margin + 3, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(rec.expectedROI, margin + 28, yPosition);
+        yPosition += 5;
+
+        // Effort
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Effort: ${rec.effort}`, margin + 3, yPosition);
+        yPosition += 8;
+      });
+    }
+
+    // Long-term Section
+    if (longTerm.length > 0) {
+      if (yPosition > 240) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      yPosition += 5;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Long-term Improvements', margin, yPosition);
+      yPosition += 8;
+
+      longTerm.forEach((rec, index) => {
+        if (yPosition > 250) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${index + 1}. ${rec.title}`, margin, yPosition);
+        yPosition += 6;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        
+        // Description
+        const descLines = pdf.splitTextToSize(rec.description, pageWidth - 2 * margin);
+        pdf.text(descLines, margin + 3, yPosition);
+        yPosition += descLines.length * 4 + 2;
+
+        // Timeline info
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Start: ${rec.implementationDate}`, margin + 3, yPosition);
+        pdf.text(`ROI Visible: ${rec.benefitRealizationDate}`, margin + 70, yPosition);
+        yPosition += 5;
+
+        // Expected ROI
+        pdf.text('Expected ROI: ', margin + 3, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(rec.expectedROI, margin + 28, yPosition);
+        yPosition += 5;
+
+        // Effort
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Effort: ${rec.effort}`, margin + 3, yPosition);
+        yPosition += 8;
+      });
+    }
+
+    pdf.save('optimization-insights.pdf');
+    
+    toast({
+      title: "PDF Exported",
+      description: `Successfully exported ${filteredRecommendations.length} recommendations to PDF.`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -204,6 +354,10 @@ export default function Optimization() {
               <p className="text-muted-foreground">Actionable recommendations to improve capacity and efficiency</p>
             </div>
           </div>
+          <Button onClick={exportToPDF}>
+            <Download className="h-4 w-4 mr-2" />
+            Export to PDF
+          </Button>
         </div>
 
         {/* Forecast Period & Data Analysis Banner */}
@@ -297,10 +451,11 @@ export default function Optimization() {
         </Card>
 
         {/* Quick Wins */}
+        {quickWins.length > 0 ? (
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Badge variant="default" className="bg-green-500">Quick Wins</Badge>
-            <span className="text-sm text-muted-foreground">High impact, low effort - implement immediately</span>
+            <span className="text-sm text-muted-foreground">High impact, low effort - implement immediately ({quickWins.length} recommendations)</span>
           </div>
           <div className="grid gap-4">
             {quickWins.map((rec) => (
@@ -402,12 +557,20 @@ export default function Optimization() {
             ))}
           </div>
         </div>
+        ) : (
+          <Card className="border-muted">
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              <p>No quick win recommendations available for the selected {forecastPeriod}-day period.</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Long-term Improvements */}
+        {longTerm.length > 0 ? (
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Badge variant="secondary">Long-term Improvements</Badge>
-            <span className="text-sm text-muted-foreground">Strategic initiatives for sustained growth</span>
+            <span className="text-sm text-muted-foreground">Strategic initiatives for sustained growth ({longTerm.length} recommendations)</span>
           </div>
           <div className="grid gap-4">
             {longTerm.map((rec) => (
@@ -509,6 +672,13 @@ export default function Optimization() {
             ))}
           </div>
         </div>
+        ) : (
+          <Card className="border-muted">
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              <p>No long-term recommendations available for the selected {forecastPeriod}-day period.</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
